@@ -1,14 +1,21 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import { config } from 'dotenv';
+
+//Load environment variables
+config();
 
 const app = express();
 
+const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 3000;
+
 const connection = async () => {
     await mongoose.connect(
-    'mongodb+srv://admin:123456%40Tom@cbc-db.qoabxtl.mongodb.net/?retryWrites=true&w=majority&appName=cbc-db'
+    MONGODB_URI
     ).then(() => {console.log('Connection Successful')});
 
-    app.listen(3000, () => {console.log('App is opened in the post 3000')})
+    app.listen(PORT, () => {console.log('App is opened in the post 3000')})
 }
 
 connection();
