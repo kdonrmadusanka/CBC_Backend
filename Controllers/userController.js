@@ -1,3 +1,4 @@
+import { request } from "express";
 import userSchema from "../Models/user.js";
 
 export const createUser = async (req, res) => {
@@ -6,7 +7,7 @@ export const createUser = async (req, res) => {
         const existingUser = await userSchema.findOne({ email });
 
         if (existingUser) {
-            return res.json({ message: "The user alread exists" });
+            return res.status(409).json({ message: "The user alread exists" });
         }
 
         const latestUser = await userSchema.find().sort({ _id: -1 }).limit(1);
@@ -34,6 +35,22 @@ export const createUser = async (req, res) => {
          });
 
     } catch(error) {
+        console.log(`The error message is ${error}.`);
+    }
+    
+}
+
+export const getAllUser = async (req, res) => {
+    try{
+        const allStudents = await userSchema.find();
+
+        if (!allStudents) {
+            return res.status(200).json({'message': 'There are no students registered'});
+        }
+
+        return res.json(allStudents);
+        
+    } catch (error) {
         console.log(`The error message is ${error}.`);
     }
 }
