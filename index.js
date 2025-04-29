@@ -23,7 +23,10 @@ const connection = async () => {
     MONGODB_URI
     ).then(() => {console.log('Connection Successful')});
 
-    app.listen(PORT, () => {console.log(`App is opened in the post ${PORT}`)})
+    setTimeout( 
+        () => {app.listen(PORT, () => {console.log(`App is opened in the post ${PORT}`)})},
+        1000
+     )
 }
 
 connection();
