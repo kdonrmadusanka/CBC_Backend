@@ -2,7 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { config } from 'dotenv';
 import morgan from 'morgan';
-import userRoutes from './Routes/userRoutes.js'
+import userRoutes from './Routes/userRoutes.js';
+import productRoutes from './Routes/productRoutes.js';
 
 //Load environment variables
 config();
@@ -36,3 +37,4 @@ app.get('/', (req, res) => {console.log('Test get request');
 });
 
 app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes)
