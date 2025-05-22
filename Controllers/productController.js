@@ -81,3 +81,21 @@ export const getProductById = async (req, res) => {
     }
 };
 
+
+// Update product by productId
+export const updateProduct = async (req, res) => {
+    try {
+        const updated = await Product.findOneAndUpdate(
+            { productId: req.params.id },
+            req.body,
+            { new: true } // Return updated document
+        );
+        if (!updated) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.status(200).json({ message: "Product updated successfully", updated });
+    } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({ message: "Failed to update product" });
+    }
+};
