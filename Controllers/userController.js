@@ -44,9 +44,9 @@ export const createUser = async (req, res) => {
             isBlocked: userFound.isBlocked,
             type: userFound.type
         }, process.env.JWT_SECRET
-    );
+        );
 
-        res.status(201).json({ 
+        return res.status(201).json({ 
             savedUser,
             message: "New user is created",
             token: token
@@ -54,39 +54,46 @@ export const createUser = async (req, res) => {
 
     } catch(error) {
         console.log(`The error message is ${error}.`);
-    }
-    
+        return res.status(500).json({ message: 'An error occurred during registering new user' });
+    } 
 }
 
 export const userLogin = async (req, res) => {
     const { email, password } = req.body;
-    
-    const userFound = await userSchema.findOne({ email: email });
 
-    if (!userFound || userFound.length == 0) {
-        return res.status(404).json({ message: 'Please register before login' });
+    try {
+        const userFound = await userSchema.findOne({ email: email });
+
+        if (!userFound) {
+            return res.status(404).json({ message: 'Please register before login' });
+        }
+
+        const isMatch = await bcrypt.compare(password, userFound.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Please provide correct password' });
+        }
+
+        const token = jwt.sign({
+            _id: userFound._id,
+            id: userFound.id,
+            firstName: userFound.firstName,
+            lastName: userFound.lastName,
+            isBlocked: userFound.isBlocked,
+            type: userFound.type
+        }, process.env.JWT_SECRET);
+
+        return res.status(200).json({ 
+            message: 'User login successful',
+            token: token 
+        });
+
+    } catch (error) {
+        console.error(`Login error: ${error}`);
+        return res.status(500).json({ message: 'An error occurred during login' });
     }
+};
 
-    const isMatch = await bcrypt.compare(password, userFound.password);
-
-    if ( !isMatch ) {
-        return res.status(401).json({ message: 'Please provide correct password' });
-    }
-
-    const token = jwt.sign({
-        _id : userFound._id,
-        id: userFound.id,
-        firstName: userFound.firstName,
-        lastName: userFound.lastName,
-        isBlocked: userFound.isBlocked,
-        type: userFound.type
-    }, process.env.JWT_SECRET);
-
-    return res.status(200).json({ 
-        'message': 'User login succesful',
-        token: token
-     });
-}
 
 export const getAllUser = async (req, res) => {
     try{
@@ -100,5 +107,24 @@ export const getAllUser = async (req, res) => {
 
     } catch (error) {
         console.log(`The error message is ${error}.`);
+        return res.status(500).json({ message: "An error occurred while getting all users" });
     }
 }
+
+export const deleteUser = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deletedUser = await userSchema.findOneAndDelete({ id: id });
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({ message: `User with id ${id} deleted successfully.` });
+    } catch (error) {
+        console.error(`Error while deleting user: ${error}`);
+        return res.status(500).json({ message: "An error occurred while deleting the user" });
+    }
+};
+
