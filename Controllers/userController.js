@@ -2,6 +2,7 @@ import userSchema from "../Models/user.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+
 export const createUser = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -58,6 +59,7 @@ export const createUser = async (req, res) => {
     } 
 }
 
+
 export const userLogin = async (req, res) => {
     const { email, password } = req.body;
 
@@ -111,6 +113,7 @@ export const getAllUser = async (req, res) => {
     }
 }
 
+
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
 
@@ -127,4 +130,23 @@ export const deleteUser = async (req, res) => {
         return res.status(500).json({ message: "An error occurred while deleting the user" });
     }
 };
+
+
+export const getUserById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await userSchema.findOne({ id: id });
+
+        if (!user) {
+            return res.status(404).json({ message: `User with id ${id} not found.` });
+        }
+
+        return res.status(200).json(user);
+    } catch (error) {
+        console.error(`Error while retrieving user: ${error}`);
+        return res.status(500).json({ message: "An error occurred while fetching the user." });
+    }
+};
+
 
