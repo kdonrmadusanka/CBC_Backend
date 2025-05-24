@@ -1,6 +1,7 @@
 import userSchema from "../Models/user.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import cache from "../Utility/cache.js";
 
 
 export const createUser = async (req, res) => {
@@ -47,6 +48,8 @@ export const createUser = async (req, res) => {
         }, process.env.JWT_SECRET
         );
 
+        cache.set(`userToken ${userFound.email}`, token, 3600);
+
         return res.status(201).json({ 
             savedUser,
             message: "New user is created",
@@ -76,6 +79,15 @@ export const userLogin = async (req, res) => {
             return res.status(401).json({ message: 'Please provide correct password' });
         }
 
+        const cachedToken = cache.get(`userToken ${email}`);
+
+        if(cachedToken){
+            return res.status(200).json({ 
+            message: 'User login successful',
+            token: cachedToken 
+            });
+        }
+
         const token = jwt.sign({
             _id: userFound._id,
             id: userFound.id,
@@ -96,6 +108,18 @@ export const userLogin = async (req, res) => {
     }
 };
 
+export const userLogout = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Remove the user's token from cache
+        cache.del(`userToken ${email}`);
+        return res.status(200).json({ message: "User logged out successfully" });
+    } catch (error) {
+        console.error(`Logout error: ${error}`);
+        return res.status(500).json({ message: 'An error occurred during logout' });
+    }
+}
 
 export const getAllUser = async (req, res) => {
     try{
